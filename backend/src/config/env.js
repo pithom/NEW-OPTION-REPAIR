@@ -103,20 +103,26 @@ const usingWeakSecret = jwtSecret === 'change-me-in-production' || jwtSecret.len
 const smtpConfigured = Boolean(env.smtp.user && env.smtp.pass && (env.smtp.service || env.smtp.host));
 const usingLocalMongoUri = /mongodb:\/\/(?:127\.0\.0\.1|localhost)/i.test(env.mongoUri);
 
-if (env.isProduction && usingWeakSecret) {
-  throw new Error('JWT_SECRET must be set to a strong value with at least 32 characters in production.');
-}
+if (env.isProduction) {
+  const productionErrors = [];
 
-if (env.isProduction && usingLocalMongoUri) {
-  throw new Error(
-    'MONGODB_URI must point to a hosted MongoDB deployment in production instead of localhost.'
-  );
-}
+  if (usingWeakSecret) {
+    productionErrors.push('JWT_SECRET must be at least 32 characters.');
+  }
 
-if (env.isProduction && adminPassword === 'Admin@12345') {
-  throw new Error('ADMIN_PASSWORD must be changed from the default value in production.');
-}
+  if (usingLocalMongoUri) {
+    productionErrors.push('MONGODB_URI must point to hosted MongoDB, not localhost.');
+  }
 
-if (env.isProduction && !smtpConfigured) {
-  throw new Error('SMTP email credentials must be configured in production.');
+  if (adminPassword === 'Admin@12345') {
+    productionErrors.push('ADMIN_PASSWORD must be changed from the default value.');
+  }
+
+  if (!smtpConfigured) {
+    productionErrors.push('SMTP_USER and SMTP_PASS must be configured for password reset email.');
+  }
+
+  if (productionErrors.length > 0) {
+    throw new Error(`Production environment is not ready: ${productionErrors.join(' ')}`);
+  }
 }

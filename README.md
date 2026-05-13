@@ -46,6 +46,7 @@ This repo is configured to run on Render as a single Node web service:
 
 ### Required production environment variables
 
+- `JWT_SECRET`: strong random string with at least 32 characters
 - `MONGODB_URI`: a hosted MongoDB connection string
 - `ADMIN_PASSWORD`: non-default admin password for first boot
 - `SMTP_USER`: SMTP username
@@ -67,6 +68,8 @@ If you prefer setting up the service without a Blueprint, use:
 - Build Command: `npm run render:build`
 - Start Command: `npm start`
 - Health Check Path: `/api/health`
+
+Also add all required production environment variables manually. The `JWT_SECRET` auto-generation only happens when using the Blueprint.
 
 ## Default admin
 

@@ -1,7 +1,16 @@
 import axios from 'axios';
 
+const fallbackApiUrl = 'https://new-option-repair-backend.onrender.com';
+const rawApiUrl = (import.meta.env.VITE_API_URL || fallbackApiUrl).trim();
+const trimmedApiUrl = rawApiUrl?.replace(/\/+$/, '') || '';
+const normalizedApiUrl = trimmedApiUrl
+  ? trimmedApiUrl.endsWith('/api')
+    ? trimmedApiUrl
+    : `${trimmedApiUrl}/api`
+  : '/api';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: normalizedApiUrl,
   withCredentials: true
 });
 
