@@ -7,7 +7,7 @@ const startServer = async () => {
   await connectDatabase();
   await seedDefaults();
 
-  app.listen(env.port, () => {
+  app.listen(env.port, '0.0.0.0', () => {
     console.log(`Server running on port ${env.port}`);
   });
 };

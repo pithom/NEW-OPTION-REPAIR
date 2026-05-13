@@ -2,8 +2,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const defaultAllowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
-
 const parseList = (value, fallback = []) => {
   if (!value) {
     return fallback;
@@ -36,16 +34,41 @@ const parseBoolean = (value, fallback) => {
   return fallback;
 };
 
+const normalizeOrigin = (value) => {
+  if (!value) {
+    return '';
+  }
+
+  try {
+    return new URL(value).origin;
+  } catch {
+    return value.trim().replace(/\/+$/, '');
+  }
+};
+
 const nodeEnv = process.env.NODE_ENV || 'development';
 const jwtSecret = process.env.JWT_SECRET?.trim() || 'change-me-in-production';
 const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@12345';
-const allowedOrigins = parseList(process.env.ALLOWED_ORIGINS, defaultAllowedOrigins);
+const localAllowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+const configuredAllowedOrigins = parseList(
+  process.env.ALLOWED_ORIGINS,
+  nodeEnv === 'production' ? [] : localAllowedOrigins
+).map(normalizeOrigin);
+const renderExternalUrl = process.env.RENDER_EXTERNAL_URL?.trim() || '';
+const renderExternalOrigin = normalizeOrigin(renderExternalUrl);
+const allowedOrigins = Array.from(
+  new Set([
+    ...configuredAllowedOrigins,
+    ...(nodeEnv === 'production' && renderExternalOrigin ? [renderExternalOrigin] : [])
+  ])
+);
 
 export const env = {
   nodeEnv,
   isProduction: nodeEnv === 'production',
   port: Number(process.env.PORT || 5000),
   mongoUri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/new-optional-technology',
+  renderExternalUrl,
   jwtSecret,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   allowedOrigins,
@@ -78,13 +101,16 @@ export const env = {
 
 const usingWeakSecret = jwtSecret === 'change-me-in-production' || jwtSecret.length < 32;
 const smtpConfigured = Boolean(env.smtp.user && env.smtp.pass && (env.smtp.service || env.smtp.host));
+const usingLocalMongoUri = /mongodb:\/\/(?:127\.0\.0\.1|localhost)/i.test(env.mongoUri);
 
 if (env.isProduction && usingWeakSecret) {
   throw new Error('JWT_SECRET must be set to a strong value with at least 32 characters in production.');
 }
 
-if (env.isProduction && allowedOrigins.length === 0) {
-  throw new Error('ALLOWED_ORIGINS must include at least one trusted frontend origin in production.');
+if (env.isProduction && usingLocalMongoUri) {
+  throw new Error(
+    'MONGODB_URI must point to a hosted MongoDB deployment in production instead of localhost.'
+  );
 }
 
 if (env.isProduction && adminPassword === 'Admin@12345') {

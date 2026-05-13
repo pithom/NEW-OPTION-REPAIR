@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
@@ -18,24 +21,33 @@ import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 const app = express();
 
-const corsOptions = {
-  credentials: true,
-  origin(origin, callback) {
-    if (!origin || env.allowedOrigins.includes(origin)) {
-      callback(null, true);
-      return;
-    }
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const frontendDistPath = path.resolve(currentDir, '../../frontend/dist');
+const frontendBuildExists = fs.existsSync(frontendDistPath);
 
-    callback(createHttpError(403, 'This origin is not allowed to access the API.'));
+const corsOptionsDelegate = (req, callback) => {
+  const requestOrigin = req.header('origin');
+  const requestHost = req.get('host');
+  const sameOrigin =
+    Boolean(requestOrigin) && Boolean(requestHost) && requestOrigin === `${req.protocol}://${requestHost}`;
+
+  if (!requestOrigin || sameOrigin || env.allowedOrigins.includes(requestOrigin)) {
+    callback(null, {
+      credentials: true,
+      origin: requestOrigin || false
+    });
+    return;
   }
+
+  callback(createHttpError(403, 'This origin is not allowed to access the API.'));
 };
 
 app.disable('x-powered-by');
 app.set('trust proxy', env.trustedProxyHops);
 
 app.use(helmet());
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.use(cors(corsOptionsDelegate));
+app.options('*', cors(corsOptionsDelegate));
 app.use(cookieParser());
 app.use(express.json({ limit: env.requestBodyLimit }));
 app.use(express.urlencoded({ extended: false, limit: env.requestBodyLimit }));
@@ -54,6 +66,19 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/contact-messages', contactMessageRoutes);
 app.use('/api/public', publicFormLimiter, publicRoutes);
+
+if (env.isProduction && frontendBuildExists) {
+  app.use(express.static(frontendDistPath));
+
+  app.get('*', (req, res, next) => {
+    if (req.path === '/api' || req.path.startsWith('/api/')) {
+      next();
+      return;
+    }
+
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+}
 
 app.use(notFound);
 app.use(errorHandler);
