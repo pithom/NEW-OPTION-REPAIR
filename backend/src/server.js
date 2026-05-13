@@ -4,15 +4,22 @@ import { env } from './config/env.js';
 import { seedDefaults } from './utils/seedDefaults.js';
 
 const startServer = async () => {
-  await connectDatabase();
-  await seedDefaults();
+  try {
+    await connectDatabase();
+    console.log('MongoDB connected successfully');
 
-  app.listen(env.port, '0.0.0.0', () => {
-    console.log(`Server running on port ${env.port}`);
-  });
+    await seedDefaults();
+    console.log('Default data seeded');
+
+    const port = process.env.PORT || env.port || 5000;
+
+    app.listen(port, '0.0.0.0', () => {
+      console.log(`Server running on port ${port}`);
+    });
+  } catch (error) {
+    console.error('Server startup failed:', error);
+    process.exit(1);
+  }
 };
 
-startServer().catch((error) => {
-  console.error('Server startup failed:', error.message);
-  process.exit(1);
-});
+startServer();
