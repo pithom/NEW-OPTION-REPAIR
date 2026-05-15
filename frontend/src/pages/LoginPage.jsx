@@ -233,7 +233,7 @@ function LoginPage() {
       await login(credentials, { remember: rememberMe });
       navigate('/app', { replace: true });
     } catch (loginError) {
-      setError(loginError.response?.data?.message || 'Login failed. Please verify your credentials.');
+      setError(loginError.response?.data?.message || 'Unable to reach the login service. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
