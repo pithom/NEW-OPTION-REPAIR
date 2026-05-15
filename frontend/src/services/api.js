@@ -1,29 +1,26 @@
 import axios from 'axios';
 
-const fallbackApiUrl = 'https://new-option-repair-backend.onrender.com';
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim() || '';
-const isAbsoluteUrl = (value) => /^https?:\/\//i.test(value);
+const normalizeApiBase = (value) => {
+  const trimmedValue = value.trim().replace(/\/+$/, '');
+
+  if (!trimmedValue) {
+    return '';
+  }
+
+  return trimmedValue.endsWith('/api') ? trimmedValue : `${trimmedValue}/api`;
+};
 
 const chooseApiBase = () => {
-  const trimmedConfigured = configuredApiUrl.replace(/\/+$/, '');
-
-  if (!trimmedConfigured) {
-    return `${fallbackApiUrl}/api`;
+  if (configuredApiUrl) {
+    return normalizeApiBase(configuredApiUrl);
   }
 
-  if (isAbsoluteUrl(trimmedConfigured)) {
-    return trimmedConfigured.endsWith('/api') ? trimmedConfigured : `${trimmedConfigured}/api`;
-  }
-
-  // In production, a relative API URL on a static site causes requests to hit the frontend service.
   if (import.meta.env.PROD) {
-    console.warn(
-      `VITE_API_URL="${configuredApiUrl}" is relative in production. Falling back to ${fallbackApiUrl}/api.`
-    );
-    return `${fallbackApiUrl}/api`;
+    return '/api';
   }
 
-  return trimmedConfigured.endsWith('/api') ? trimmedConfigured : `${trimmedConfigured}/api`;
+  return 'http://localhost:5000/api';
 };
 
 const normalizedApiUrl = chooseApiBase();
