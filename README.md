@@ -48,6 +48,7 @@ This repo is configured to run on Render as a single Node web service:
 
 - `JWT_SECRET`: strong random string with at least 32 characters
 - `MONGODB_URI`: a hosted MongoDB connection string
+- `ADMIN_EMAIL`: admin login email to seed in production
 - `ADMIN_PASSWORD`: non-default admin password for first boot
 - `SMTP_USER`: SMTP username
 - `SMTP_PASS`: SMTP password or API key
@@ -73,9 +74,19 @@ Also add all required production environment variables manually. The `JWT_SECRET
 
 ## Default admin
 
-The app seeds an admin account automatically if no users exist yet.
+The app seeds an admin account automatically if the configured admin email does not exist yet.
 
-- Email: `admin@newoptiontechnology.com`
+- Email: `cfeddx6@gmail.com`
 - Password: `ADMIN_PASSWORD` from your environment
+
+To use the same login in both local and hosted environments, set Render `ADMIN_EMAIL` and
+`ADMIN_PASSWORD` to the same values used in `backend/.env`, then redeploy.
+
+If the hosted database already contains an older admin account, create or refresh the matching admin
+with:
+
+```bash
+npm run reset:admin -- --email=cfeddx6@gmail.com --password=your-password
+```
 
 Change the password after first login if you used a temporary value.
