@@ -24,7 +24,7 @@ const chooseApiBase = () => {
     return normalizeApiBase(configuredApiUrl);
   }
 
-  return 'http://localhost:5000/api';
+  return '/api';
 };
 
 const normalizedApiUrl = chooseApiBase();
