@@ -2,6 +2,7 @@ import axios from 'axios';
 import { clearAuthToken, readAuthToken } from './authToken.js';
 
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim() || '';
+const hostedFallbackApiUrl = 'https://newoption-repair-backend.onrender.com';
 const normalizeApiBase = (value) => {
   const trimmedValue = value.trim().replace(/\/+$/, '');
 
@@ -15,6 +16,10 @@ const normalizeApiBase = (value) => {
 const chooseApiBase = () => {
   if (configuredApiUrl) {
     return normalizeApiBase(configuredApiUrl);
+  }
+
+  if (typeof window !== 'undefined' && window.location.hostname.endsWith('.onrender.com')) {
+    return normalizeApiBase(hostedFallbackApiUrl);
   }
 
   return '/api';

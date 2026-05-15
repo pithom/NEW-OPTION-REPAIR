@@ -52,9 +52,11 @@ const renderExternalUrl = process.env.RENDER_EXTERNAL_URL?.trim() || '';
 const renderExternalOrigin = normalizeOrigin(renderExternalUrl);
 const frontendUrl = process.env.FRONTEND_URL?.trim() || '';
 const frontendOrigin = normalizeOrigin(frontendUrl);
+const hostedFrontendFallbackOrigins = ['https://new-option-repair.onrender.com'];
 const allowedOrigins = Array.from(
   new Set([
     ...configuredAllowedOrigins,
+    ...(nodeEnv === 'production' ? hostedFrontendFallbackOrigins : []),
     ...(frontendOrigin ? [frontendOrigin] : []),
     ...(nodeEnv === 'production' && renderExternalOrigin ? [renderExternalOrigin] : [])
   ])
