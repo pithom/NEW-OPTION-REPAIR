@@ -30,36 +30,6 @@ const userSchema = new mongoose.Schema(
       trim: true,
       maxlength: 24
     },
-    passwordResetOtpHash: {
-      type: String,
-      default: null,
-      select: false
-    },
-    passwordResetOtpExpiresAt: {
-      type: Date,
-      default: null,
-      select: false
-    },
-    passwordResetOtpAttempts: {
-      type: Number,
-      default: 0,
-      select: false
-    },
-    passwordResetLastSentAt: {
-      type: Date,
-      default: null,
-      select: false
-    },
-    passwordResetTokenHash: {
-      type: String,
-      default: null,
-      select: false
-    },
-    passwordResetTokenExpiresAt: {
-      type: Date,
-      default: null,
-      select: false
-    },
     role: {
       type: String,
       default: 'admin'

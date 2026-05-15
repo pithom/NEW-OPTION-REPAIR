@@ -23,24 +23,6 @@ export const authLimiter = buildLimiter({
   message: 'Too many login attempts. Please wait before trying again.'
 });
 
-export const forgotPasswordLimiter = buildLimiter({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: 'Too many password reset requests. Please wait before trying again.'
-});
-
-export const verifyOtpLimiter = buildLimiter({
-  windowMs: 10 * 60 * 1000,
-  max: 10,
-  message: 'Too many verification attempts. Please wait before trying again.'
-});
-
-export const resetPasswordLimiter = buildLimiter({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  message: 'Too many password reset attempts. Please wait before trying again.'
-});
-
 export const publicFormLimiter = buildLimiter({
   windowMs: 15 * 60 * 1000,
   max: 8,

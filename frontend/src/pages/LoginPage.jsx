@@ -354,10 +354,6 @@ function LoginPage() {
               <span aria-hidden="true" className="login-check-box" />
               <span>Remember me</span>
             </label>
-
-            <Link className="text-link login-help-link" to="/forgot-password">
-              Forgot password?
-            </Link>
           </div>
 
           <button className="button login-submit" disabled={isSubmitting} type="submit">

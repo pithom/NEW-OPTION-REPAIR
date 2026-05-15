@@ -6,15 +6,12 @@ const ContactMessagesPage = lazy(() => import('./pages/ContactMessagesPage.jsx')
 const CustomerDirectoryPage = lazy(() => import('./pages/CustomerDirectoryPage.jsx'));
 const CustomersPage = lazy(() => import('./pages/CustomersPage.jsx'));
 const DashboardPage = lazy(() => import('./pages/DashboardPage.jsx'));
-const ForgotPassword = lazy(() => import('./pages/ForgotPassword.jsx'));
 const LoginPage = lazy(() => import('./pages/LoginPage.jsx'));
 const PortfolioPage = lazy(() => import('./pages/PortfolioPage.jsx'));
 const RepairsPage = lazy(() => import('./pages/RepairsPage.jsx'));
-const ResetPassword = lazy(() => import('./pages/ResetPassword.jsx'));
 const ReportsPage = lazy(() => import('./pages/ReportsPage.jsx'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage.jsx'));
 const TechniciansPage = lazy(() => import('./pages/TechniciansPage.jsx'));
-const VerifyOtp = lazy(() => import('./pages/VerifyOtp.jsx'));
 
 const routeFallback = (
   <div className="screen-center">
@@ -36,9 +33,6 @@ function App() {
     <Routes>
       <Route path="/" element={renderRoute(PortfolioPage)} />
       <Route path="/login" element={renderRoute(LoginPage)} />
-      <Route path="/forgot-password" element={renderRoute(ForgotPassword)} />
-      <Route path="/verify-otp" element={renderRoute(VerifyOtp)} />
-      <Route path="/reset-password" element={renderRoute(ResetPassword)} />
 
       <Route path="/app" element={renderRoute(ProtectedLayout)}>
         <Route index element={renderRoute(DashboardPage)} />

@@ -18,22 +18,6 @@ const parsePositiveInt = (value, fallback) => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
-const parseBoolean = (value, fallback) => {
-  if (value === undefined) {
-    return fallback;
-  }
-
-  if (String(value).toLowerCase() === 'true') {
-    return true;
-  }
-
-  if (String(value).toLowerCase() === 'false') {
-    return false;
-  }
-
-  return fallback;
-};
-
 const normalizeOrigin = (value) => {
   if (!value) {
     return '';
@@ -74,23 +58,8 @@ export const env = {
   allowedOrigins,
   authCookieName: process.env.AUTH_COOKIE_NAME || 'new_option_session',
   authCookieMaxAgeDays: parsePositiveInt(process.env.AUTH_COOKIE_MAX_AGE_DAYS, 7),
-  passwordResetCookieName: process.env.PASSWORD_RESET_COOKIE_NAME || 'new_option_password_reset',
-  passwordResetOtpExpiresMinutes: parsePositiveInt(process.env.PASSWORD_RESET_OTP_EXPIRES_MINUTES, 5),
-  passwordResetSessionExpiresMinutes: parsePositiveInt(process.env.PASSWORD_RESET_SESSION_EXPIRES_MINUTES, 10),
-  passwordResetMaxAttempts: parsePositiveInt(process.env.PASSWORD_RESET_MAX_ATTEMPTS, 5),
-  passwordResetResendCooldownSeconds: parsePositiveInt(process.env.PASSWORD_RESET_RESEND_COOLDOWN_SECONDS, 60),
   requestBodyLimit: process.env.REQUEST_BODY_LIMIT || '200kb',
   trustedProxyHops: parsePositiveInt(process.env.TRUST_PROXY_HOPS, 1),
-  smtp: {
-    service: process.env.SMTP_SERVICE?.trim() || '',
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parsePositiveInt(process.env.SMTP_PORT, 465),
-    secure: parseBoolean(process.env.SMTP_SECURE, true),
-    user: process.env.SMTP_USER || '',
-    pass: process.env.SMTP_PASS || '',
-    fromEmail: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || '',
-    fromName: process.env.SMTP_FROM_NAME || 'NEW OPTION TECHNOLOGY'
-  },
   admin: {
     name: process.env.ADMIN_NAME || 'System Administrator',
     email: process.env.ADMIN_EMAIL || 'admin@newoptiontechnology.com',
@@ -100,7 +69,6 @@ export const env = {
 };
 
 const usingWeakSecret = jwtSecret === 'change-me-in-production' || jwtSecret.length < 32;
-const smtpConfigured = Boolean(env.smtp.user && env.smtp.pass && (env.smtp.service || env.smtp.host));
 const usingLocalMongoUri = /mongodb:\/\/(?:127\.0\.0\.1|localhost)/i.test(env.mongoUri);
 
 if (env.isProduction) {
@@ -116,10 +84,6 @@ if (env.isProduction) {
 
   if (adminPassword === 'Admin@12345') {
     productionErrors.push('ADMIN_PASSWORD must be changed from the default value.');
-  }
-
-  if (!smtpConfigured) {
-    productionErrors.push('SMTP_USER and SMTP_PASS must be configured for password reset email.');
   }
 
   if (productionErrors.length > 0) {
