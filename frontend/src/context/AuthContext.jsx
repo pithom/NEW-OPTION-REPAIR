@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import api from '../services/api.js';
 import { clearAuthToken, storeAuthToken } from '../services/authToken.js';
 
@@ -7,18 +7,20 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
+  const hasActiveSessionRef = useRef(false);
 
   useEffect(() => {
     let isActive = true;
 
     const bootstrap = async () => {
       try {
-        const { data } = await api.get('/auth/me');
+        const { data } = await api.get('/auth/me', { skipAuthEvent: true });
         if (isActive) {
           setUser(data.user);
+          hasActiveSessionRef.current = Boolean(data.user);
         }
       } catch (error) {
-        if (isActive) {
+        if (isActive && !hasActiveSessionRef.current) {
           setUser(null);
         }
       } finally {
@@ -33,6 +35,7 @@ export function AuthProvider({ children }) {
         return;
       }
 
+      hasActiveSessionRef.current = false;
       setUser(null);
       setIsBootstrapping(false);
     };
@@ -60,6 +63,7 @@ export function AuthProvider({ children }) {
       clearAuthToken();
     }
 
+    hasActiveSessionRef.current = true;
     setUser(data.user);
     return data.user;
   };
@@ -70,6 +74,7 @@ export function AuthProvider({ children }) {
     } catch (error) {
       // Clear local auth state even if the server session is already gone.
     } finally {
+      hasActiveSessionRef.current = false;
       clearAuthToken();
       setUser(null);
       setIsBootstrapping(false);
@@ -78,6 +83,7 @@ export function AuthProvider({ children }) {
 
   const refreshProfile = async () => {
     const { data } = await api.get('/auth/me');
+    hasActiveSessionRef.current = Boolean(data.user);
     setUser(data.user);
     return data.user;
   };
