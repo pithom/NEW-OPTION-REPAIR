@@ -18,6 +18,16 @@ const parsePositiveInt = (value, fallback) => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
 
+const parseSameSite = (value, fallback) => {
+  const normalized = (value || '').trim().toLowerCase();
+
+  if (normalized === 'strict' || normalized === 'lax' || normalized === 'none') {
+    return normalized;
+  }
+
+  return fallback;
+};
+
 const normalizeOrigin = (value) => {
   if (!value) {
     return '';
@@ -61,6 +71,10 @@ export const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   allowedOrigins,
   authCookieName: process.env.AUTH_COOKIE_NAME || 'new_option_session',
+  authCookieSameSite: parseSameSite(
+    process.env.AUTH_COOKIE_SAME_SITE,
+    nodeEnv === 'production' ? 'none' : 'lax'
+  ),
   authCookieMaxAgeDays: parsePositiveInt(process.env.AUTH_COOKIE_MAX_AGE_DAYS, 7),
   requestBodyLimit: process.env.REQUEST_BODY_LIMIT || '200kb',
   trustedProxyHops: parsePositiveInt(process.env.TRUST_PROXY_HOPS, 1),

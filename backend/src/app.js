@@ -98,7 +98,14 @@ const corsOptionsDelegate = (req, callback) => {
     return;
   }
 
-  callback(createHttpError(403, 'This origin is not allowed to access the API.'));
+  callback(
+    createHttpError(
+      403,
+      `This origin is not allowed to access the API: ${
+        requestOrigin || 'unknown'
+      }. Set FRONTEND_URL or ALLOWED_ORIGINS.`
+    )
+  );
 };
 
 app.disable('x-powered-by');
