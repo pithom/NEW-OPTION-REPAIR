@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clearAuthToken, readAuthToken } from './authToken.js';
 
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim() || '';
 const normalizeApiBase = (value) => {
@@ -26,10 +27,22 @@ const api = axios.create({
   withCredentials: true
 });
 
+api.interceptors.request.use((config) => {
+  const token = readAuthToken();
+
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && !error.config?.skipAuthEvent && typeof window !== 'undefined') {
+      clearAuthToken();
       window.dispatchEvent(new Event('auth:unauthorized'));
     }
 

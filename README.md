@@ -58,6 +58,7 @@ This repo is configured to run on Render as a single Node web service:
 
 - Do not use the checked-in `backend/mongo-data` folder on Render. Render instances are ephemeral. Use hosted MongoDB instead.
 - If you add a custom domain later, set `ALLOWED_ORIGINS` to that exact origin, such as `https://yourdomain.com`.
+- If frontend and backend are hosted as separate services, set `FRONTEND_URL` and include the same value in `ALLOWED_ORIGINS`.
 - `JWT_SECRET` is generated automatically by the Blueprint if it is missing.
 - The backend will refuse to boot in production if `JWT_SECRET`, `ADMIN_PASSWORD`, `SMTP`, or `MONGODB_URI` are unsafe or incomplete.
 

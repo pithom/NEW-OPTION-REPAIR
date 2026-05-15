@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import api from '../services/api.js';
+import { clearAuthToken, storeAuthToken } from '../services/authToken.js';
 
 const AuthContext = createContext(null);
 
@@ -49,7 +50,16 @@ export function AuthProvider({ children }) {
     const { data } = await api.post('/auth/login', {
       ...credentials,
       remember: Boolean(options.remember)
+    }, {
+      skipAuthEvent: true
     });
+
+    if (data.token) {
+      storeAuthToken(data.token, Boolean(options.remember));
+    } else {
+      clearAuthToken();
+    }
+
     setUser(data.user);
     return data.user;
   };
@@ -60,6 +70,7 @@ export function AuthProvider({ children }) {
     } catch (error) {
       // Clear local auth state even if the server session is already gone.
     } finally {
+      clearAuthToken();
       setUser(null);
       setIsBootstrapping(false);
     }

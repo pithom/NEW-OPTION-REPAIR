@@ -32,10 +32,12 @@ export const login = asyncHandler(async (req, res) => {
     throw createHttpError(401, 'Invalid email or password.');
   }
 
-  setAuthCookie(res, createToken(user._id), remember);
+  const token = createToken(user._id);
+  setAuthCookie(res, token, remember);
 
   res.json({
-    user: sanitizeUser(user)
+    user: sanitizeUser(user),
+    token
   });
 });
 
