@@ -228,12 +228,28 @@ function LoginPage() {
     event.preventDefault();
     setIsSubmitting(true);
     setError('');
+    const normalizedCredentials = {
+      email: credentials.email.trim().toLowerCase(),
+      password: credentials.password
+    };
 
     try {
-      await login(credentials, { remember: rememberMe });
+      await login(normalizedCredentials, { remember: rememberMe });
       navigate('/app', { replace: true });
     } catch (loginError) {
-      setError(loginError.response?.data?.message || 'Unable to reach the login service. Please try again.');
+      const status = loginError.response?.status;
+
+      if (status === 401) {
+        setError('Invalid email or password. Please verify your credentials.');
+      } else if (status === 429) {
+        setError('Too many login attempts. Please wait a few minutes and try again.');
+      } else if (status === 403) {
+        setError(
+          'Login blocked by server origin policy. Update backend ALLOWED_ORIGINS or FRONTEND_URL.'
+        );
+      } else {
+        setError(loginError.response?.data?.message || 'Unable to reach the login service. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }

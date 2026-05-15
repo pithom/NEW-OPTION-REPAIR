@@ -40,9 +40,12 @@ const configuredAllowedOrigins = parseList(
 ).map(normalizeOrigin);
 const renderExternalUrl = process.env.RENDER_EXTERNAL_URL?.trim() || '';
 const renderExternalOrigin = normalizeOrigin(renderExternalUrl);
+const frontendUrl = process.env.FRONTEND_URL?.trim() || '';
+const frontendOrigin = normalizeOrigin(frontendUrl);
 const allowedOrigins = Array.from(
   new Set([
     ...configuredAllowedOrigins,
+    ...(frontendOrigin ? [frontendOrigin] : []),
     ...(nodeEnv === 'production' && renderExternalOrigin ? [renderExternalOrigin] : [])
   ])
 );
@@ -53,6 +56,7 @@ export const env = {
   port: Number(process.env.PORT || 5000),
   mongoUri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/new-optional-technology',
   renderExternalUrl,
+  frontendUrl,
   jwtSecret,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   allowedOrigins,

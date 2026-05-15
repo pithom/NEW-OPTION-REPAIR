@@ -25,13 +25,72 @@ const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const frontendDistPath = path.resolve(currentDir, '../../frontend/dist');
 const frontendBuildExists = fs.existsSync(frontendDistPath);
 
-const corsOptionsDelegate = (req, callback) => {
-  const requestOrigin = req.header('origin');
-  const requestHost = req.get('host');
-  const sameOrigin =
-    Boolean(requestOrigin) && Boolean(requestHost) && requestOrigin === `${req.protocol}://${requestHost}`;
+const normalizeOrigin = (value) => {
+  if (!value) {
+    return '';
+  }
 
-  if (!requestOrigin || sameOrigin || env.allowedOrigins.includes(requestOrigin)) {
+  try {
+    return new URL(value).origin;
+  } catch {
+    return value.trim().replace(/\/+$/, '');
+  }
+};
+
+const sharedHostingBaseDomains = new Set(['onrender.com', 'vercel.app', 'netlify.app', 'github.io']);
+
+const getSiteInfo = (value) => {
+  try {
+    const { protocol, hostname } = new URL(value);
+    const host = hostname.toLowerCase();
+
+    if (host === 'localhost' || /^[\d.]+$/.test(host) || host.includes(':')) {
+      return {
+        baseDomain: host,
+        siteKey: `${protocol}//${host}`
+      };
+    }
+
+    const segments = host.split('.').filter(Boolean);
+    const baseDomain =
+      segments.length > 1 ? segments.slice(-2).join('.') : segments[0] || host;
+
+    return {
+      baseDomain,
+      siteKey: `${protocol}//${baseDomain}`
+    };
+  } catch {
+    return null;
+  }
+};
+
+const isLikelySameSite = (originA, originB) => {
+  const siteA = getSiteInfo(originA);
+  const siteB = getSiteInfo(originB);
+
+  if (!siteA || !siteB) {
+    return false;
+  }
+
+  if (siteA.baseDomain !== siteB.baseDomain) {
+    return false;
+  }
+
+  if (sharedHostingBaseDomains.has(siteA.baseDomain)) {
+    return false;
+  }
+
+  return siteA.siteKey === siteB.siteKey;
+};
+
+const corsOptionsDelegate = (req, callback) => {
+  const requestOrigin = normalizeOrigin(req.header('origin'));
+  const requestHost = req.get('host');
+  const requestServerOrigin = requestHost ? `${req.protocol}://${requestHost}` : '';
+  const sameOrigin = Boolean(requestOrigin) && requestOrigin === requestServerOrigin;
+  const sameSite = Boolean(requestOrigin) && isLikelySameSite(requestOrigin, requestServerOrigin);
+
+  if (!requestOrigin || sameOrigin || sameSite || env.allowedOrigins.includes(requestOrigin)) {
     callback(null, {
       credentials: true,
       origin: requestOrigin || false
