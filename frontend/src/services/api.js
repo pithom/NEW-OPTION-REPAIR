@@ -12,12 +12,16 @@ const normalizeApiBase = (value) => {
 };
 
 const chooseApiBase = () => {
-  if (configuredApiUrl) {
-    return normalizeApiBase(configuredApiUrl);
+  if (import.meta.env.PROD) {
+    if (configuredApiUrl) {
+      console.warn('Ignoring VITE_API_URL in production and using same-origin /api.');
+    }
+
+    return '/api';
   }
 
-  if (import.meta.env.PROD) {
-    return '/api';
+  if (configuredApiUrl) {
+    return normalizeApiBase(configuredApiUrl);
   }
 
   return 'http://localhost:5000/api';
