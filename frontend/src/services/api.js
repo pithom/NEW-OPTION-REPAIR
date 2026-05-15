@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-const fallbackApiUrl = 'https://newoption-repair-backend.onrender.com';
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim() || '';
 const normalizeApiBase = (value) => {
   const trimmedValue = value.trim().replace(/\/+$/, '');
@@ -17,7 +16,7 @@ const chooseApiBase = () => {
     return normalizeApiBase(configuredApiUrl);
   }
 
-  return `${fallbackApiUrl}/api`;
+  return '/api';
 };
 
 const normalizedApiUrl = chooseApiBase();
