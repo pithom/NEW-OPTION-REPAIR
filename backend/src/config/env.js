@@ -13,6 +13,13 @@ const parseList = (value, fallback = []) => {
     .filter(Boolean);
 };
 
+const parseBooleanOrValue = (value, fallback = false) => {
+  if (typeof value === 'boolean') return value;
+  if (value === 'true' || value === '1') return true;
+  if (value === 'false' || value === '0') return false;
+  return fallback;
+};
+
 const parsePositiveInt = (value, fallback) => {
   const parsed = Number.parseInt(value ?? '', 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;

@@ -4,7 +4,7 @@ const baseCookieOptions = {
   httpOnly: true,
   path: '/',
   sameSite: env.authCookieSameSite,
-  secure: env.isProduction
+  secure: env.isProduction ? true : false
 };
 
 export const setAuthCookie = (res, token, remember = false) => {
