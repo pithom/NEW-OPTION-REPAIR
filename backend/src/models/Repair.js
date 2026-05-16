@@ -82,6 +82,11 @@ const repairSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: 1600
+    },
+    paidStatus: {
+      type: String,
+      enum: ['Pending', 'Paid'],
+      default: 'Pending'
     }
   },
   {
