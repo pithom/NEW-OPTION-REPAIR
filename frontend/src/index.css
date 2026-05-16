@@ -2124,6 +2124,21 @@ textarea:focus,
   color: var(--text);
 }
 
+.status-badge--unpaid {
+  background: rgba(255, 109, 92, 0.14);
+  color: #ffb0a5;
+}
+
+.status-badge--partial {
+  background: rgba(241, 196, 79, 0.14);
+  color: #f9dc8e;
+}
+
+.status-badge--paid {
+  background: rgba(84, 201, 120, 0.16);
+  color: #9ee6b3;
+}
+
 .empty-state {
   padding: 18px 0;
   color: var(--muted);

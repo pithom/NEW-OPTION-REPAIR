@@ -1,7 +1,7 @@
 import { startTransition, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import StatusBadge from '../components/dashboard/StatusBadge.jsx';
 import api from '../services/api.js';
-import { formatCurrency, formatDate, STATUS_OPTIONS, toInputDate } from '../services/formatters.js';
+import { formatCurrency, formatDate, PAYMENT_STATUS_OPTIONS, STATUS_OPTIONS, toInputDate } from '../services/formatters.js';
 
 const emptyRepair = {
   returnOfId: '',
@@ -12,6 +12,7 @@ const emptyRepair = {
   model: '',
   problemDescription: '',
   status: 'Pending',
+  paymentStatus: 'Unpaid',
   technicianId: '',
   intakeDate: toInputDate(new Date()),
   diagnosisDate: '',
@@ -103,6 +104,7 @@ function RepairsPage() {
         repair.laptopBrand,
         repair.model,
         repair.status,
+        repair.paymentStatus || 'Unpaid',
         repair.technicianName
       ]
         .join(' ')
@@ -183,6 +185,7 @@ function RepairsPage() {
       model: repair.model,
       problemDescription: repair.problemDescription,
       status: repair.status,
+      paymentStatus: repair.paymentStatus || 'Unpaid',
       technicianId: repair.technician?._id || '',
       intakeDate: toInputDate(repair.intakeDate),
       diagnosisDate: toInputDate(repair.diagnosisDate),
@@ -206,6 +209,7 @@ function RepairsPage() {
       laptopBrand: repair.laptopBrand,
       model: repair.model,
       status: 'Pending',
+      paymentStatus: 'Unpaid',
       technicianId: '',
       intakeDate: toInputDate(new Date()),
       estimatedCost: '',
@@ -248,7 +252,7 @@ function RepairsPage() {
             <input
               className="search-input"
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search customer, device, phone, status..."
+              placeholder="Search customer, device, phone, status, payment..."
               value={search}
             />
 
@@ -302,6 +306,7 @@ function RepairsPage() {
                 <th>Customer</th>
                 <th>Device</th>
                 <th>Status</th>
+                <th>Payment</th>
                 <th>Technician</th>
                 <th>Intake</th>
                 <th>Final Cost</th>
@@ -329,6 +334,9 @@ function RepairsPage() {
                     <td data-label="Status">
                       <StatusBadge status={repair.status} />
                     </td>
+                    <td data-label="Payment">
+                      <StatusBadge status={repair.paymentStatus || 'Unpaid'} />
+                    </td>
                     <td data-label="Technician">{repair.technicianName || repair.technician?.name || 'Unassigned'}</td>
                     <td data-label="Intake">{formatDate(repair.intakeDate)}</td>
                     <td data-label="Final Cost">{formatCurrency(repair.finalCost)}</td>
@@ -349,7 +357,7 @@ function RepairsPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7">
+                  <td colSpan="8">
                     <div className="empty-state">No repair records match your filters.</div>
                   </td>
                 </tr>
@@ -418,6 +426,17 @@ function RepairsPage() {
                   <label htmlFor="status">Status</label>
                   <select id="status" name="status" onChange={handleChange} value={form.status}>
                     {STATUS_OPTIONS.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="input-group">
+                  <label htmlFor="paymentStatus">Payment Status</label>
+                  <select id="paymentStatus" name="paymentStatus" onChange={handleChange} value={form.paymentStatus}>
+                    {PAYMENT_STATUS_OPTIONS.map((status) => (
                       <option key={status} value={status}>
                         {status}
                       </option>

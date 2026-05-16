@@ -1,4 +1,5 @@
 export const STATUS_OPTIONS = ['Pending', 'Diagnosed', 'In Progress', 'Completed', 'Delivered'];
+export const PAYMENT_STATUS_OPTIONS = ['Unpaid', 'Partial', 'Paid'];
 
 export const formatCurrency = (value = 0) =>
   new Intl.NumberFormat('en-RW', {
@@ -31,7 +32,10 @@ export const statusTone = (status) => {
     Diagnosed: 'diagnosed',
     'In Progress': 'progress',
     Completed: 'completed',
-    Delivered: 'delivered'
+    Delivered: 'delivered',
+    Unpaid: 'unpaid',
+    Partial: 'partial',
+    Paid: 'paid'
   };
 
   return tones[status] || 'pending';

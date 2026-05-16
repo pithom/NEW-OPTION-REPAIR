@@ -14,8 +14,21 @@ import {
 } from '../utils/validation.js';
 
 const repairStatuses = ['Pending', 'Diagnosed', 'In Progress', 'Completed', 'Delivered'];
+const paymentStatuses = ['Unpaid', 'Partial', 'Paid'];
 
-const buildRepairPayload = async (payload) => {
+const mapLegacyPaidStatus = (value) => {
+  if (value === 'Paid') {
+    return 'Paid';
+  }
+
+  if (value === 'Pending') {
+    return 'Unpaid';
+  }
+
+  return undefined;
+};
+
+const buildRepairPayload = async (payload, currentRepair = null) => {
   const customerId = normalizeObjectId(payload.customerId, { field: 'Customer' });
   const technicianId = normalizeObjectId(payload.technicianId, { field: 'Technician' });
   const returnOfId = normalizeObjectId(payload.returnOfId, { field: 'Return repair record' });
@@ -37,6 +50,11 @@ const buildRepairPayload = async (payload) => {
   }
 
   const returnSequence = returnOf ? (Number(returnOf.returnSequence || 0) + 1) : 0;
+  const resolvedPaymentStatus =
+    payload.paymentStatus ??
+    mapLegacyPaidStatus(payload.paidStatus) ??
+    currentRepair?.paymentStatus ??
+    mapLegacyPaidStatus(currentRepair?.paidStatus);
 
   return {
     returnOf: returnOf?._id || null,
@@ -99,7 +117,13 @@ const buildRepairPayload = async (payload) => {
     notes: normalizeOptionalString(payload.notes, {
       field: 'Notes',
       max: 1600
-    })
+    }),
+    paymentStatus: normalizeEnum(resolvedPaymentStatus, {
+      field: 'Payment status',
+      allowed: paymentStatuses,
+      defaultValue: 'Unpaid'
+    }),
+    paidStatus: undefined
   };
 };
 
@@ -133,7 +157,7 @@ export const updateRepair = asyncHandler(async (req, res) => {
     throw new Error('Repair not found.');
   }
 
-  Object.assign(repair, await buildRepairPayload(req.body));
+  Object.assign(repair, await buildRepairPayload(req.body, repair));
   await repair.save();
 
   const populated = await repair.populate([

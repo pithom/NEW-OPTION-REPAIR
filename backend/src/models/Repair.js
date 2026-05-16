@@ -1,5 +1,29 @@
 import mongoose from 'mongoose';
 
+const paymentStatuses = ['Unpaid', 'Partial', 'Paid'];
+const legacyPaidStatuses = ['Pending', 'Paid'];
+
+const mapLegacyPaidStatus = (value) => {
+  if (value === 'Paid') {
+    return 'Paid';
+  }
+
+  if (value === 'Pending') {
+    return 'Unpaid';
+  }
+
+  return undefined;
+};
+
+const normalizeSerializedRepair = (_, ret) => {
+  if (!ret.paymentStatus) {
+    ret.paymentStatus = mapLegacyPaidStatus(ret.paidStatus) || 'Unpaid';
+  }
+
+  delete ret.paidStatus;
+  return ret;
+};
+
 const repairSchema = new mongoose.Schema(
   {
     returnOf: {
@@ -83,14 +107,26 @@ const repairSchema = new mongoose.Schema(
       trim: true,
       maxlength: 1600
     },
+    paymentStatus: {
+      type: String,
+      enum: paymentStatuses,
+      default: 'Unpaid'
+    },
+    // Legacy field kept temporarily so older records still serialize correctly.
     paidStatus: {
       type: String,
-      enum: ['Pending', 'Paid'],
-      default: 'Pending'
+      enum: legacyPaidStatuses,
+      default: undefined
     }
   },
   {
-    timestamps: true
+    timestamps: true,
+    toJSON: {
+      transform: normalizeSerializedRepair
+    },
+    toObject: {
+      transform: normalizeSerializedRepair
+    }
   }
 );
 
